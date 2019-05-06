@@ -25,9 +25,7 @@ var (
 
 func main() {
 	servers := []Server{}
-	log.Print("Starting aws-ec2-ssh 🦊")
-
-	flag.StringVar(&user, "user", "username", "The user of login")
+	flag.StringVar(&user, "user", "ec2-user", "The user of login")
 	flag.StringVar(&passwd, "passwd", "yourpasswd", "The passwd of user")
 	flag.StringVar(&prikey, "privatekey", "/.ssh/id_rsa", "The privatekey of user")
 
@@ -88,14 +86,13 @@ func main() {
 		Searcher:  searcher,
 	}
 
-	index, promptResult, err := prompt.Run()
+	index, _, err := prompt.Run()
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		return
 	}
 
-	fmt.Printf("You choose %q\n what server %s", promptResult, servers[index].Name)
 	selectedServer := servers[index]
 
 	config := &ssh.ClientConfig{
@@ -115,9 +112,9 @@ func main() {
 	defer client.Close()
 
 	// default terminal
-	if err := client.Terminal(nil).Start(); err != nil {
-		log.Fatalf("Err: %v", err)
-	}
+	// if err := client.Terminal(nil).Start(); err != nil {
+	// 	log.Fatalf("Err: %v", err)
+	// }
 
 	// with a terminal config
 	termConfig := &sshclient.TerminalConfig{
@@ -126,6 +123,7 @@ func main() {
 		Modes: ssh.TerminalModes{
 			ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+
 		},
 	}
 	if err := client.Terminal(termConfig).Start(); err != nil {
